@@ -276,7 +276,9 @@ export default function Dashboard() {
             Welcome back!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your exam databases and create professional assessments.
+            {databases.length === 0 
+              ? "Get started by creating your first exam database." 
+              : "Manage your exam databases and create professional assessments."}
           </p>
         </div>
 
@@ -351,7 +353,27 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDatabases.map((database) => (
+          {filteredDatabases.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Database className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No databases yet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Create your first database to start building exams
+              </p>
+              <button
+                onClick={() => setCreateDatabaseModal(true)}
+                className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors inline-flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Create Your First Database
+              </button>
+            </div>
+          ) : (
+            filteredDatabases.map((database) => (
             <div
               key={database.id}
               className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
@@ -439,7 +461,8 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
 
