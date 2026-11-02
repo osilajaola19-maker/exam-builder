@@ -44,20 +44,18 @@ body {
   @apply bg-gray-400 dark:bg-gray-500;
 }
 
-/* Animated gradient background */
+/* Professional gradient background */
 .animated-gradient {
   background: linear-gradient(
     135deg,
-    #667eea 0%,
-    #764ba2 15%,
-    #f093fb 30%,
-    #4facfe 50%,
-    #00f2fe 70%,
-    #43e97b 85%,
-    #fa709a 100%
+    #1e3a8a 0%,
+    #3b82f6 25%,
+    #2563eb 50%,
+    #1d4ed8 75%,
+    #1e40af 100%
   );
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background-size: 200% 200%;
+  animation: gradientShift 10s ease infinite;
 }
 
 @keyframes gradientShift {
