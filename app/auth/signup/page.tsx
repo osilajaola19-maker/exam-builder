@@ -85,10 +85,12 @@ export default function SignUp() {
           </button>
         </div>
 
-        <button
-          onClick={handleGoogleSignIn}
-          className="w-full py-3 px-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors mb-6"
-        >
+        {/* Google Sign-In - Enable in Supabase first */}
+        {false && (
+          <button
+            onClick={handleGoogleSignIn}
+            className="w-full py-3 px-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors mb-6"
+          >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
               fill="#EA4335"
