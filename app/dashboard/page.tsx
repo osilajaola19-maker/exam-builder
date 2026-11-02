@@ -15,41 +15,59 @@ export default function Dashboard() {
   const [showBrightness, setShowBrightness] = useState(false)
   const [createDatabaseModal, setCreateDatabaseModal] = useState(false)
   const [newDatabaseName, setNewDatabaseName] = useState('')
+  const [editingDatabase, setEditingDatabase] = useState<{id: string, name: string} | null>(null)
 
   useEffect(() => {
     loadDatabases()
   }, [])
 
   const loadDatabases = async () => {
-    // Mock data for now
-    setDatabases([
-      {
-        id: '1',
-        name: 'english',
-        examsCount: 2,
-        createdAt: 'July 12, 2026',
-        recentExams: [
-          { id: '1', title: 'exam 1', status: 'published' },
-          { id: '2', title: 'exam 2', status: 'published' },
-        ],
-      },
-      {
-        id: '2',
-        name: 'olami',
-        examsCount: 0,
-        createdAt: 'July 27, 2026',
-        recentExams: [],
-      },
-      {
-        id: '3',
-        name: 'exam 1',
-        examsCount: 1,
-        createdAt: 'July 28, 2026',
-        recentExams: [
-          { id: '3', title: 'exam 1', status: 'draft' },
-        ],
-      },
-    ])
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (!currentUser) return
+
+      // Fetch databases for current user
+      const { data: dbData, error: dbError } = await supabase
+        .from('databases')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false })
+
+      if (dbError) {
+        console.error('Error loading databases:', dbError)
+        toast.error('Failed to load databases')
+        return
+      }
+
+      // Fetch exams for each database
+      const databasesWithExams = await Promise.all(
+        (dbData || []).map(async (db) => {
+          const { data: examsData } = await supabase
+            .from('exams')
+            .select('id, title, status')
+            .eq('database_id', db.id)
+            .order('created_at', { ascending: false })
+            .limit(3)
+
+          return {
+            id: db.id,
+            name: db.name,
+            examsCount: examsData?.length || 0,
+            createdAt: new Date(db.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            recentExams: examsData || [],
+          }
+        })
+      )
+
+      setDatabases(databasesWithExams)
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Failed to load databases')
+    }
   }
 
   const handleCreateDatabase = async () => {
@@ -58,11 +76,97 @@ export default function Dashboard() {
       return
     }
 
-    // Create database logic here
-    toast.success('Database created successfully!')
-    setCreateDatabaseModal(false)
-    setNewDatabaseName('')
-    loadDatabases()
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (!currentUser) {
+        toast.error('Not authenticated')
+        return
+      }
+
+      if (editingDatabase) {
+        // Update existing database
+        const { error } = await supabase
+          .from('databases')
+          .update({ name: newDatabaseName.trim() })
+          .eq('id', editingDatabase.id)
+          .eq('user_id', currentUser.id)
+
+        if (error) {
+          console.error('Error updating database:', error)
+          toast.error('Failed to update database')
+          return
+        }
+
+        toast.success('Database updated successfully!')
+      } else {
+        // Create new database
+        const { data, error } = await supabase
+          .from('databases')
+          .insert([
+            {
+              user_id: currentUser.id,
+              name: newDatabaseName.trim(),
+            },
+          ])
+          .select()
+
+        if (error) {
+          console.error('Error creating database:', error)
+          toast.error('Failed to create database')
+          return
+        }
+
+        toast.success('Database created successfully!')
+      }
+
+      setCreateDatabaseModal(false)
+      setNewDatabaseName('')
+      setEditingDatabase(null)
+      loadDatabases()
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Failed to save database')
+    }
+  }
+
+  const handleEditDatabase = (database: any) => {
+    setEditingDatabase({ id: database.id, name: database.name })
+    setNewDatabaseName(database.name)
+    setCreateDatabaseModal(true)
+    setOpenDropdown(null)
+  }
+
+  const handleDeleteDatabase = async (databaseId: string) => {
+    if (!confirm('Are you sure you want to delete this database? This will also delete all exams in this database.')) {
+      return
+    }
+
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (!currentUser) {
+        toast.error('Not authenticated')
+        return
+      }
+
+      const { error } = await supabase
+        .from('databases')
+        .delete()
+        .eq('id', databaseId)
+        .eq('user_id', currentUser.id)
+
+      if (error) {
+        console.error('Error deleting database:', error)
+        toast.error('Failed to delete database')
+        return
+      }
+
+      toast.success('Database deleted successfully!')
+      setOpenDropdown(null)
+      loadDatabases()
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Failed to delete database')
+    }
   }
 
   const getThemeIcon = () => {
@@ -278,7 +382,10 @@ export default function Dashboard() {
                   </button>
                   {openDropdown === database.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-                      <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                      <button 
+                        onClick={() => handleEditDatabase(database)}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      >
                         <Edit className="w-4 h-4" />
                         Edit
                       </button>
@@ -286,7 +393,10 @@ export default function Dashboard() {
                         <Share2 className="w-4 h-4" />
                         Share
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                      <button 
+                        onClick={() => handleDeleteDatabase(database.id)}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                      >
                         <Trash2 className="w-4 h-4" />
                         Delete
                       </button>
@@ -338,7 +448,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Create New Database
+              {editingDatabase ? 'Edit Database' : 'Create New Database'}
             </h3>
             <input
               type="text"
@@ -349,7 +459,11 @@ export default function Dashboard() {
             />
             <div className="flex gap-3">
               <button
-                onClick={() => setCreateDatabaseModal(false)}
+                onClick={() => {
+                  setCreateDatabaseModal(false)
+                  setEditingDatabase(null)
+                  setNewDatabaseName('')
+                }}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
@@ -358,7 +472,7 @@ export default function Dashboard() {
                 onClick={handleCreateDatabase}
                 className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
               >
-                Create
+                {editingDatabase ? 'Update' : 'Create'}
               </button>
             </div>
           </div>
