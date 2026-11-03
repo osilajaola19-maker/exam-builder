@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
 export default function Dashboard() {
-  const { user, theme, setTheme, brightness, setBrightness, notifications } = useStore()
+  const { user, theme, setTheme, notifications } = useStore()
   const [databases, setDatabases] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
@@ -198,7 +198,7 @@ export default function Dashboard() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search databases, exams..."
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:text-white"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function Dashboard() {
             <div className="relative">
               <button
                 onClick={() => setShowBrightness(!showBrightness)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
                 title="Change theme"
               >
                 {getThemeIcon()}

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type ThemeColor = 'blue' | 'purple' | 'green' | 'orange' | 'pink'
@@ -29,29 +30,38 @@ interface AppState {
   databases: Database[]
   theme: ThemeMode
   themeColor: ThemeColor
-  brightness: number
   notifications: number
-  
+
   setUser: (user: User | null) => void
   setDatabases: (databases: Database[]) => void
   setTheme: (theme: ThemeMode) => void
   setThemeColor: (color: ThemeColor) => void
-  setBrightness: (brightness: number) => void
   setNotifications: (count: number) => void
 }
 
-export const useStore = create<AppState>((set) => ({
-  user: null,
-  databases: [],
-  theme: 'system',
-  themeColor: 'blue',
-  brightness: 100,
-  notifications: 0,
-  
-  setUser: (user) => set({ user }),
-  setDatabases: (databases) => set({ databases }),
-  setTheme: (theme) => set({ theme }),
-  setThemeColor: (color) => set({ themeColor: color }),
-  setBrightness: (brightness) => set({ brightness }),
-  setNotifications: (count) => set({ notifications: count }),
-}))
+export const useStore = create<AppState>()(
+  persist(
+    (set) => ({
+      user: null,
+      databases: [],
+      theme: 'system',
+      themeColor: 'blue',
+      notifications: 0,
+
+      setUser: (user) => set({ user }),
+      setDatabases: (databases) => set({ databases }),
+      setTheme: (theme) => set({ theme }),
+      setThemeColor: (color) => set({ themeColor: color }),
+      setNotifications: (count) => set({ notifications: count }),
+    }),
+    {
+      name: 'exam-builder-store',
+      // Only persist theme settings and user, not databases
+      partialize: (state) => ({
+        theme: state.theme,
+        themeColor: state.themeColor,
+        user: state.user,
+      }),
+    }
+  )
+)
