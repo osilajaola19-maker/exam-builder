@@ -5,23 +5,47 @@ import { useStore } from '@/lib/store'
 import { User, Mail, Calendar, Shield, ArrowLeft, Edit2, Check, X } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { supabase } from '@/lib/supabase'
 
 export default function Profile() {
   const user = useStore((state) => state.user)
   const setUser = useStore((state) => state.setUser)
   const [editing, setEditing] = useState(false)
   const [fullName, setFullName] = useState(user?.fullName || '')
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!fullName.trim()) {
       toast.error('Name cannot be empty')
       return
     }
 
-    // Update user name
-    setUser({ ...user!, fullName })
-    toast.success('Profile updated successfully!')
-    setEditing(false)
+    setSaving(true)
+
+    try {
+      // Update in Supabase profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: fullName.trim() })
+        .eq('id', user!.id)
+
+      if (error) {
+        console.error('Error updating profile:', error)
+        toast.error('Failed to update profile')
+        setSaving(false)
+        return
+      }
+
+      // Update local state - this will update everywhere immediately
+      setUser({ ...user!, fullName: fullName.trim() })
+      toast.success('Profile updated successfully!')
+      setEditing(false)
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -87,11 +111,13 @@ export default function Profile() {
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        autoFocus
                       />
                       <button
                         onClick={handleSave}
-                        className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        disabled={saving}
+                        className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                       >
                         <Check className="w-4 h-4" />
                       </button>

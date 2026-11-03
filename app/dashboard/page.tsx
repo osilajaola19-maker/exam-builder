@@ -205,30 +205,64 @@ export default function Dashboard() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-3 ml-6">
-            {/* Brightness */}
+            {/* Theme Switcher */}
             <div className="relative">
               <button
                 onClick={() => setShowBrightness(!showBrightness)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Change theme"
               >
                 {getThemeIcon()}
               </button>
               {showBrightness && (
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-50">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Brightness
-                    </span>
-                    <span className="text-xs text-gray-500">{brightness}%</span>
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 z-50">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Theme
+                  </p>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setTheme('light')
+                        setShowBrightness(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        theme === 'light'
+                          ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <Sun className="w-5 h-5" />
+                      <span className="text-sm">Light</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTheme('dark')
+                        setShowBrightness(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <Moon className="w-5 h-5" />
+                      <span className="text-sm">Dark</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTheme('system')
+                        setShowBrightness(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        theme === 'system'
+                          ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <Monitor className="w-5 h-5" />
+                      <span className="text-sm">System</span>
+                    </button>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={brightness}
-                    onChange={(e) => setBrightness(Number(e.target.value))}
-                    className="w-full"
-                  />
                 </div>
               )}
             </div>
