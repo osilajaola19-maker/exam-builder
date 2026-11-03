@@ -40,10 +40,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Overlay - click outside to close (works on all screen sizes) */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={onClose}
         />
       )}
@@ -93,6 +93,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onClose}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
                     ? 'bg-primary-600 text-white'
@@ -112,6 +113,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </p>
           <Link
             href="/dashboard/profile"
+            onClick={onClose}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               pathname === '/dashboard/profile'
                 ? 'bg-primary-600 text-white'
@@ -151,6 +153,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={onClose}
                       className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-colors ${
                         isActive
                           ? 'bg-primary-500 text-white'
