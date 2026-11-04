@@ -40,8 +40,8 @@ export default function SignUp() {
         password: formData.password,
         fullName: formData.fullName,
       })
-      toast.success('Account created! Check your email to verify.')
-      router.push('/auth/verify-email')
+      toast.success('Account created! Welcome to Exam Builder!')
+      router.push('/dashboard')
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account')
     } finally {
